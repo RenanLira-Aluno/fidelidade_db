@@ -101,5 +101,25 @@ INSERT INTO produto (id_produto, codigo, nome, descricao, preco, categoria, esto
 
 
 
+CREATE OR REPLACE FUNCTION inserir(nome_tabela TEXT, VARIADIC valores anyarray) RETURNS void AS $$
+DECLARE
+	message_error TEXT;
+BEGIN
+	if nome_tabela = 'cliente' THEN
+		SELECT cadastrar_cliente(
+			nome_p     := valores[1],
+			cpf_p      := valores[2],
+			email_p    := valores[3],
+			telefone_p := valores[4]
+		);
+	ELSE
+		RAISE EXCEPTION 'Tabela % não implementada para inserção', nome_tabela;
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		GET STACKED DIAGNOSTICS message_error = MESSAGE_TEXT;
 
+		RAISE EXCEPTION 'Erro ao inserir na tabela %: %', nome_tabela, message_error;
+END;
+$$ LANGUAGE plpgsql; 
 
