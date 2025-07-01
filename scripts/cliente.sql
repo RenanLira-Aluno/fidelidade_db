@@ -24,6 +24,37 @@ UPDATE ON cliente
 FOR EACH ROW EXECUTE PROCEDURE validar_cliente();
 
 
+CREATE OR REPLACE FUNCTION fn_gerar_pontos_cliente() RETURNS TRIGGER AS $$
+DECLARE
+	pontos_gerados int;
+	total_venda decimal(10, 2);
+BEGIN
+
+	SELECT valor_total INTO total_venda FROM venda WHERE id_venda = NEW.id_venda;
+
+	pontos_gerados := floor(total_venda / 10);
+
+	IF pontos_gerados > 0 THEN
+		UPDATE cliente
+		SET pontos = pontos + pontos_gerados
+		WHERE id_cliente = NEW.id_cliente;
+
+		RAISE NOTICE 'Pontos gerados: %', pontos_gerados;
+	ELSE
+		RAISE NOTICE 'Nenhum ponto gerado para a venda com valor total: %', total_venda;
+	END IF;
+
+	RETURN new;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER tg_gerar_pontos_cliente AFTER
+UPDATE ON venda
+FOR EACH ROW WHEN (OLD.status <> 'finalizado' and NEW.status = 'finalizado') 
+EXECUTE FUNCTION fn_gerar_pontos_cliente();
+
+
 CREATE OR replace FUNCTION cadastrar_cliente(nome_p text, cpf_p text, email_p text, telefone_p text) RETURNS void AS $$
 DECLARE
 	constraint_violada text;
@@ -96,7 +127,8 @@ $$ LANGUAGE plpgsql;
 -- views
 
 CREATE OR REPLACE VIEW clientes_ativos AS
-SELECT * FROM cliente
+SELECT *
+FROM cliente
 WHERE ativo = true;
 
 -- exemplo de uso da função cadastrar_cliente
@@ -107,4 +139,5 @@ SELECT cadastrar_cliente('renan', '123.456.789-01', 'renan@email.com', '86999168
 SELECT atualizar_dados_cliente(1, 'Renan Silva', NULL, '86999168877');
 
 
-SELECT * FROM clientes_ativos;
+SELECT *
+FROM clientes_ativos;
