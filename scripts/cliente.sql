@@ -55,6 +55,34 @@ FOR EACH ROW WHEN (OLD.status <> 'finalizado' and NEW.status = 'finalizado')
 EXECUTE FUNCTION fn_gerar_pontos_cliente();
 
 
+CREATE OR REPLACE FUNCTION fn_atualizar_categoria_cliente() RETURNS TRIGGER AS $$
+DECLARE
+	categoria_nova int;
+BEGIN
+	SELECT cod INTO categoria_nova FROM categoria_programa 
+	WHERE pontos <= NEW.pontos
+	ORDER BY pontos DESC
+	LIMIT 1;
+
+	IF categoria_nova = NEW.cod_categoria THEN
+		RETURN NEW; -- Nenhuma mudança de categoria
+	END IF;
+
+	UPDATE cliente
+	SET cod_categoria = categoria_nova
+	WHERE id_cliente = NEW.id_cliente;
+
+	return NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_atualizar_categoria_cliente AFTER
+UPDATE ON cliente
+FOR EACH ROW 
+WHEN (OLD.pontos <> NEW.pontos)
+EXECUTE FUNCTION fn_atualizar_categoria_cliente();
+
+
 CREATE OR replace FUNCTION cadastrar_cliente(nome_p text, cpf_p text, email_p text, telefone_p text) RETURNS void AS $$
 DECLARE
 	constraint_violada text;
