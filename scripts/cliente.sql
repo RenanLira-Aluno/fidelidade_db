@@ -93,9 +93,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- views
+
+CREATE OR REPLACE VIEW clientes_ativos AS
+SELECT * FROM cliente
+WHERE ativo = true;
+
 -- exemplo de uso da função cadastrar_cliente
 
 SELECT cadastrar_cliente('renan', '123.456.789-01', 'renan@email.com', '86999168877');
 
 
 SELECT atualizar_dados_cliente(1, 'Renan Silva', NULL, '86999168877');
+
+
+SELECT * FROM clientes_ativos;
