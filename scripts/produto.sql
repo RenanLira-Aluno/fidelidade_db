@@ -1,14 +1,68 @@
-CREATE OR REPLACE FUNCTION fn_atualizar_estoque()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION fn_atualizar_estoque() RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE produto
-    SET estoque = estoque - NEW.quantidade
-    WHERE id_produto = NEW.id_produto;
-    RETURN NEW;
+    IF TG_OP = 'INSERT' THEN
+        -- Verifica se o estoque é suficiente
+        IF (SELECT estoque FROM produto WHERE id_produto = NEW.id_produto) < NEW.quantidade THEN
+            RAISE EXCEPTION 'Estoque insuficiente para o produto com ID %', NEW.id_produto;
+        END IF;
+
+
+
+        -- Atualiza o estoque do produto
+        UPDATE produto
+        SET estoque = estoque - NEW.quantidade
+        WHERE id_produto = NEW.id_produto;
+        RETURN NEW;
+
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE produto
+        SET estoque = estoque + OLD.quantidade
+        WHERE id_produto = OLD.id_produto;
+
+        RETURN OLD;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER tg_atualizar_estoque
-AFTER INSERT ON item_venda
-FOR EACH ROW
-EXECUTE FUNCTION fn_atualizar_estoque();
+
+CREATE TRIGGER tg_atualizar_estoque AFTER
+INSERT
+OR
+DELETE ON item_venda
+FOR EACH ROW EXECUTE FUNCTION fn_atualizar_estoque();
+
+
+CREATE OR REPLACE FUNCTION registrar_item_venda(id_venda int, cod_produto text, quantidade int) RETURNS void AS $$
+DECLARE
+    subtotal decimal(10, 2);
+    produto produto%ROWTYPE;
+BEGIN
+    -- Verifica se o produto existe
+    select * into produto from produto where codigo = cod_produto;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Produto com código % não encontrado', cod_produto;
+    END IF;
+
+    -- Calcula o subtotal
+    subtotal := quantidade * produto.preco;
+
+    -- Insere o item na tabela item_venda
+    INSERT INTO item_venda (id_venda, id_produto, quantidade, preco, subtotal)
+    VALUES (id_venda, produto.id_produto, quantidade, produto.preco, subtotal);
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION remover_item_venda(id_item int) RETURNS void AS $$
+BEGIN
+
+    -- Verifica se o item existe
+    IF NOT EXISTS (SELECT 1 FROM item_venda WHERE id_item = id_item) THEN
+        RAISE EXCEPTION 'Item de venda com ID % não encontrado', id_item;
+    END IF;
+
+    -- Remove o item da tabela item_venda
+    DELETE FROM item_venda WHERE id_item = id_item;
+
+END;
+$$ LANGUAGE plpgsql;
