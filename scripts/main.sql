@@ -43,7 +43,7 @@ CREATE TABLE resgate_cupom (
 );
 
 CREATE TABLE produto(
-	id_produto int PRIMARY KEY,
+	id_produto serial PRIMARY KEY,
 	codigo varchar(50) NOT NULL,
 	nome varchar(100) NOT NULL,
 	descricao text,
@@ -65,9 +65,9 @@ CREATE TABLE venda(
 );
 
 CREATE TABLE item_venda(
-	id_item int PRIMARY KEY,
+	id_item serial PRIMARY KEY,
 	id_venda serial REFERENCES venda(id_venda) NOT NULL,
-	id_produto int REFERENCES produto(id_produto) NOT NULL,
+	id_produto serial REFERENCES produto(id_produto) NOT NULL,
 	quantidade int NOT NULL,
 	preco decimal(10, 2) NOT NULL,
 	subtotal decimal(10, 2) NOT NULL
@@ -121,5 +121,5 @@ EXCEPTION
 
 		RAISE EXCEPTION 'Erro ao inserir na tabela %: %', nome_tabela, message_error;
 END;
-$$ LANGUAGE plpgsql; 
+$$ LANGUAGE plpgsql;
 
