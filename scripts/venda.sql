@@ -62,6 +62,11 @@ BEGIN
         UPDATE venda v
         SET valor_total = valor_total - (valor_total * desconto / 100)
         WHERE v.id_venda = id_v;
+
+        -- Atualiza o status do cupom para 'utilizado'
+        UPDATE resgate_cupom
+        SET status = 'utilizado'
+        WHERE codigo_voucher = desconto_voucher;
     END IF;
 
     -- Atualiza o status da venda para 'finalizado'
