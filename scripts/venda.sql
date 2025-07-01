@@ -43,31 +43,31 @@ INSERT ON item_venda
 FOR EACH ROW EXECUTE FUNCTION fn_atualizar_valor_total();
 
 
-CREATE OR REPLACE FUNCTION fechar_venda(id_venda int) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION fechar_venda(id_v int) RETURNS void AS $$
 DECLARE
     desconto_voucher text;
     desconto int;
 BEGIN
     -- Verifica se a venda existe
-    IF NOT EXISTS (SELECT 1 FROM venda WHERE id_venda = id_venda) THEN
-        RAISE EXCEPTION 'Venda com ID % não encontrada', id_venda;
+    IF NOT EXISTS (SELECT 1 FROM venda WHERE id_venda = id_v) THEN
+        RAISE EXCEPTION 'Venda com ID % não encontrada', id_v;
     END IF;
 
     -- Aplica o cupom, se houver
-    SELECT desconto_voucher INTO desconto_voucher FROM venda WHERE id_venda = id_venda;
+    SELECT v.desconto_voucher INTO desconto_voucher FROM venda v WHERE v.id_venda = id_v;
     IF desconto_voucher IS NOT NULL THEN
         SELECT cupom.desconto INTO desconto FROM resgate_cupom NATURAL JOIN cupom
         WHERE codigo_voucher = desconto_voucher;
 
-        UPDATE venda
+        UPDATE venda v
         SET valor_total = valor_total - (valor_total * desconto / 100)
-        WHERE id_venda = id_venda;
+        WHERE v.id_venda = id_v;
     END IF;
 
     -- Atualiza o status da venda para 'finalizado'
-    UPDATE venda
+    UPDATE venda v
     SET status = 'finalizado'
-    WHERE id_venda = id_venda;
+    WHERE v.id_venda = id_v;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -93,6 +93,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
 CREATE OR REPLACE FUNCTION abrir_venda(cpf_cliente varchar(14)) RETURNS int AS $$
 DECLARE
     id_venda int;
@@ -112,19 +113,3 @@ BEGIN
     return id_venda;
 END;
 $$ LANGUAGE plpgsql;
-
-
-SELECT abrir_venda('123.456.789-01');
-
-
-SELECT *
-from produto;
-
-
-SELECT registrar_item_venda(2, 'PRATO001', 2);
-
-
-SELECT *
-FROM venda
-NATURAL JOIN item_venda
-WHERE id_venda = 2;
