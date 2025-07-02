@@ -66,3 +66,37 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION cadastrar_produto(
+    id_produto_p INT,
+    codigo_p VARCHAR,
+    nome_p VARCHAR,
+    descricao_p TEXT,
+    preco_p DECIMAL,
+    categoria_p VARCHAR,
+    estoque_p INT
+) RETURNS void AS $$
+DECLARE
+    constraint_violada TEXT;
+BEGIN
+    -- Validação de estoque negativo
+    IF estoque_p < 0 THEN
+        RAISE EXCEPTION 'O estoque não pode ser negativo';
+    END IF;
+
+    INSERT INTO produto (id_produto, codigo, nome, descricao, preco, categoria, estoque)
+    VALUES (id_produto_p, codigo_p, nome_p, descricao_p, preco_p, categoria_p, estoque_p);
+
+EXCEPTION
+    WHEN unique_violation THEN
+        GET STACKED DIAGNOSTICS constraint_violada = CONSTRAINT_NAME;
+
+        IF constraint_violada = 'produto_pkey' THEN
+            RAISE EXCEPTION 'ID do produto já cadastrado';
+        ELSIF constraint_violada = 'produto_codigo_key' THEN
+            RAISE EXCEPTION 'Código do produto já cadastrado';
+        ELSE
+            RAISE EXCEPTION 'Violação de dado único. Constraint: %', constraint_violada;
+        END IF;
+END;
+$$ LANGUAGE plpgsql;
