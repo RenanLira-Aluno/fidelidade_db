@@ -6,8 +6,6 @@ BEGIN
             RAISE EXCEPTION 'Estoque insuficiente para o produto com ID %', NEW.id_produto;
         END IF;
 
-
-
         -- Atualiza o estoque do produto
         UPDATE produto
         SET estoque = estoque - NEW.quantidade
