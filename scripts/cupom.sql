@@ -22,7 +22,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE
-OR REPLACE FUNCTION RESGATAR_CUPOM (cpf_cliente_p int, id_cupom_p int) RETURNS void AS $$
+OR REPLACE FUNCTION resgatar_cupom (cpf_cliente_p int, id_cupom_p int) RETURNS void AS $$
 DECLARE
     cliente_row cliente%ROWTYPE;
     cupom_row cupom%ROWTYPE;
@@ -41,8 +41,8 @@ BEGIN
     END IF;
 
     -- Verifica se o cliente tem pontos suficientes
-    IF cliente_row.pontos < cupom_row.pontos_necessarios THEN
-        RAISE EXCEPTION 'Cliente com ID % não possui pontos suficientes para resgatar o cupom', cpf_cliente_p;
+    IF cliente_row.pontos <= cupom_row.pontos_necessarios THEN
+        RAISE EXCEPTION 'Cliente com CPF % não possui pontos suficientes para resgatar o cupom', cpf_cliente_p;
     END IF;
 
 
