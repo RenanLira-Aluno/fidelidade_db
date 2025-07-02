@@ -1,5 +1,5 @@
-
-CREATE OR REPLACE FUNCTION validar_cliente() RETURNS TRIGGER AS $$
+CREATE
+OR REPLACE FUNCTION validar_cliente () RETURNS TRIGGER AS $$
 begin
 	if NEW.email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' then
 		raise exception 'email invalido';
@@ -15,16 +15,13 @@ begin
 end;
 $$ LANGUAGE plpgsql;
 
-
-CREATE TRIGGER validar_cliente_trigger
-BEFORE
-INSERT
+CREATE TRIGGER validar_cliente_trigger BEFORE INSERT
 OR
-UPDATE ON cliente
-FOR EACH ROW EXECUTE PROCEDURE validar_cliente();
+UPDATE ON cliente FOR EACH ROW
+EXECUTE PROCEDURE validar_cliente ();
 
-
-CREATE OR REPLACE FUNCTION fn_gerar_pontos_cliente() RETURNS TRIGGER AS $$
+CREATE
+OR REPLACE FUNCTION fn_gerar_pontos_cliente () RETURNS TRIGGER AS $$
 DECLARE
 	pontos_gerados int;
 	total_venda decimal(10, 2);
@@ -32,7 +29,7 @@ BEGIN
 
 	SELECT valor_total INTO total_venda FROM venda WHERE id_venda = NEW.id_venda;
 
-	pontos_gerados := floor(total_venda);
+	pontos_gerados := floor(total_venda)::INTEGER;
 
 	IF pontos_gerados > 0 THEN
 		UPDATE cliente
@@ -48,14 +45,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE TRIGGER tg_gerar_pontos_cliente
+AFTER
+UPDATE ON venda FOR EACH ROW WHEN (
+	OLD.status <> 'finalizado'
+	and NEW.status = 'finalizado'
+)
+EXECUTE FUNCTION fn_gerar_pontos_cliente ();
 
-CREATE TRIGGER tg_gerar_pontos_cliente AFTER
-UPDATE ON venda
-FOR EACH ROW WHEN (OLD.status <> 'finalizado' and NEW.status = 'finalizado') 
-EXECUTE FUNCTION fn_gerar_pontos_cliente();
-
-
-CREATE OR REPLACE FUNCTION fn_atualizar_categoria_cliente() RETURNS TRIGGER AS $$
+CREATE
+OR REPLACE FUNCTION fn_atualizar_categoria_cliente () RETURNS TRIGGER AS $$
 DECLARE
 	categoria_nova int;
 BEGIN
@@ -76,14 +75,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER tg_atualizar_categoria_cliente AFTER
-UPDATE ON cliente
-FOR EACH ROW 
-WHEN (OLD.pontos <> NEW.pontos)
-EXECUTE FUNCTION fn_atualizar_categoria_cliente();
+CREATE TRIGGER tg_atualizar_categoria_cliente
+AFTER
+UPDATE ON cliente FOR EACH ROW WHEN (OLD.pontos <> NEW.pontos)
+EXECUTE FUNCTION fn_atualizar_categoria_cliente ();
 
-
-CREATE OR replace FUNCTION cadastrar_cliente(nome_p text, cpf_p text, email_p text, telefone_p text) RETURNS void AS $$
+CREATE
+OR replace FUNCTION cadastrar_cliente (
+	nome_p text,
+	cpf_p text,
+	email_p text,
+	telefone_p text
+) RETURNS void AS $$
 DECLARE
 	constraint_violada text;
 BEGIN
@@ -105,8 +108,13 @@ exception
 end;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION atualizar_dados_cliente(cliente_id int, nome_p TEXT DEFAULT NULL, email_p TEXT DEFAULT NULL, telefone_p TEXT DEFAULT NULL) RETURNS void AS $$
+CREATE
+OR REPLACE FUNCTION atualizar_dados_cliente (
+	cliente_id int,
+	nome_p TEXT DEFAULT NULL,
+	email_p TEXT DEFAULT NULL,
+	telefone_p TEXT DEFAULT NULL
+) RETURNS void AS $$
 DECLARE
 	constraint_violada TEXT;
 BEGIN
@@ -139,8 +147,8 @@ exception
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION excluir_cliente(cpf_p TEXT) RETURNS void AS $$
+CREATE
+OR REPLACE FUNCTION excluir_cliente (cpf_p TEXT) RETURNS void AS $$
 BEGIN
 	UPDATE cliente
 	SET ativo = false
@@ -153,19 +161,51 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- views
-
-CREATE OR REPLACE VIEW clientes_ativos AS
-SELECT *
-FROM cliente
-WHERE ativo = true;
+CREATE OR REPLACE VIEW
+	clientes_ativos AS
+SELECT
+	*
+FROM
+	cliente
+WHERE
+	ativo = true;
 
 -- exemplo de uso da função cadastrar_cliente
+SELECT
+	cadastrar_cliente (
+		'renan',
+		'123.456.789-01',
+		'renan@email.com',
+		'86999168877'
+	);
 
-SELECT cadastrar_cliente('renan', '123.456.789-01', 'renan@email.com', '86999168877');
+SELECT
+	atualizar_dados_cliente (1, 'Renan Silva', NULL, '86999168877');
 
+SELECT
+	*
+FROM
+	clientes_ativos;
 
-SELECT atualizar_dados_cliente(1, 'Renan Silva', NULL, '86999168877');
+DROP VIEW IF EXISTS cupons_disponiveis_por_cliente;
 
-
-SELECT *
-FROM clientes_ativos;
+CREATE OR REPLACE VIEW
+	cupons_disponiveis_por_cliente AS
+SELECT
+	cli.id_cliente,
+	cli.cpf,
+	cli.nome AS nome_cliente,
+	cat.nome AS nome_categoria,
+	cup.id_cupom,
+	cup.nome AS nome_cupom,
+	cup.descricao,
+	cup.desconto,
+	cup.pontos_necessarios,
+	cli.pontos AS pontos_cliente
+FROM
+	cliente cli
+	JOIN categoria_programa cat ON cli.cod_categoria = cat.cod
+	JOIN cupom cup ON cup.cod_categoria = cat.cod
+WHERE
+	cup.disponivel = true
+	AND cli.ativo = true;
