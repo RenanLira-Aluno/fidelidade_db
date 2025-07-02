@@ -49,7 +49,7 @@ DECLARE
     desconto int;
 BEGIN
     -- Verifica se a venda existe
-    IF NOT EXISTS (SELECT 1 FROM venda WHERE id_venda = id_v) THEN
+    IF NOT EXISTS (SELECT 1 FROM venda WHERE id_venda = id_v and status = 'preparando') THEN
         RAISE EXCEPTION 'Venda com ID % não encontrada', id_v;
     END IF;
 
@@ -81,7 +81,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION cancelar_venda(id_venda int) RETURNS void AS $$
 BEGIN
     -- Verifica se a venda existe
-    IF NOT EXISTS (SELECT 1 FROM venda WHERE id_venda = id_venda) THEN
+    IF NOT EXISTS (SELECT 1 FROM venda WHERE id_venda = id_venda and status = 'preparando') THEN
         RAISE EXCEPTION 'Venda com ID % não encontrada', id_venda;
     END IF;
 
