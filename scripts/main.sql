@@ -200,35 +200,49 @@ VALUES
 		60
 	);
 
-CREATE
-OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores anyarray) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION inserir(nome_tabela TEXT, VARIADIC valores text[])
+RETURNS void AS $$
 DECLARE
-	message_error TEXT;
+    message_error TEXT;
 BEGIN
-	if nome_tabela = 'cliente' THEN
-		SELECT cadastrar_cliente(
-			nome_p     := valores[1],
-			cpf_p      := valores[2],
-			email_p    := valores[3],
-			telefone_p := valores[4]
-		);
-	ELSIF nome_tabela = 'venda' THEN
-		SELECT abrir_venda(
-			cpf_cliente := valores[1]
-		);
-	ELSIF nome_tabela = 'item_venda' THEN
-		SELECT registrar_item_venda(
-			id_venda   := valores[1],
-			cod_produto := valores[2],
-			quantidade := valores[3]
-		);
-	ELSE
-		RAISE EXCEPTION 'Tabela % não implementada para inserção', nome_tabela;
-	END IF;
-EXCEPTION
-	WHEN OTHERS THEN
-		GET STACKED DIAGNOSTICS message_error = MESSAGE_TEXT;
+    IF nome_tabela = 'cliente' THEN
+        PERFORM cadastrar_cliente(
+            nome_p     := valores[1],
+            cpf_p      := valores[2],
+            email_p    := valores[3],
+            telefone_p := valores[4]
+        );
 
-		RAISE EXCEPTION 'Erro ao inserir na tabela %: %', nome_tabela, message_error;
+    ELSIF nome_tabela = 'venda' THEN
+        PERFORM abrir_venda(
+            cpf_cliente := valores[1]
+        );
+
+    ELSIF nome_tabela = 'item_venda' THEN
+        PERFORM registrar_item_venda(
+            id_venda    := valores[1]::INT,
+            cod_produto := valores[2],
+            quantidade  := valores[3]::INT
+        );
+
+    ELSIF nome_tabela = 'produto' THEN
+        PERFORM cadastrar_produto(
+            id_produto_p := valores[1]::INT,
+            codigo_p     := valores[2],
+            nome_p       := valores[3],
+            descricao_p  := valores[4],
+            preco_p      := valores[5]::DECIMAL,
+            categoria_p  := valores[6],
+            estoque_p    := valores[7]::INT
+        );
+
+    ELSE
+        RAISE EXCEPTION 'Tabela % não implementada para inserção', nome_tabela;
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        GET STACKED DIAGNOSTICS message_error = MESSAGE_TEXT;
+        RAISE EXCEPTION 'Erro ao inserir na tabela %: %', nome_tabela, message_error;
 END;
 $$ LANGUAGE plpgsql;
