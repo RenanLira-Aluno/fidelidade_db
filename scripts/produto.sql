@@ -30,7 +30,7 @@ DELETE ON item_venda
 FOR EACH ROW EXECUTE FUNCTION fn_atualizar_estoque();
 
 
-CREATE OR REPLACE FUNCTION registrar_item_venda(id_venda int, cod_produto text, quantidade int) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION registrar_item_venda(id_venda_p int, cod_produto text, quantidade int) RETURNS void AS $$
 DECLARE
     subtotal decimal(10, 2);
     produto produto%ROWTYPE;
@@ -43,10 +43,13 @@ BEGIN
 
     -- Calcula o subtotal
     subtotal := quantidade * produto.preco;
+    if NOT EXISTS (select 1 from venda v where v.id_venda = id_venda_p and status = 'preparando') then
+        RAISE EXCEPTION 'Venda com ID % não está disponivel', id_venda_p;
+    END IF;
 
     -- Insere o item na tabela item_venda
     INSERT INTO item_venda (id_venda, id_produto, quantidade, preco, subtotal)
-    VALUES (id_venda, produto.id_produto, quantidade, produto.preco, subtotal);
+    VALUES (id_venda_p, produto.id_produto, quantidade, produto.preco, subtotal);
 END;
 $$ LANGUAGE plpgsql;
 
