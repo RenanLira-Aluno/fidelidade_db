@@ -64,6 +64,9 @@ CREATE TABLE
 		estoque int NOT NULL
 	);
 
+ALTER TABLE produto
+ADD CONSTRAINT codigo_unique UNIQUE (codigo);
+
 CREATE TYPE status_venda AS ENUM('preparando', 'cancelado', 'finalizado');
 
 CREATE TABLE
@@ -200,8 +203,8 @@ VALUES
 		60
 	);
 
-CREATE OR REPLACE FUNCTION inserir(nome_tabela TEXT, VARIADIC valores text[])
-RETURNS void AS $$
+CREATE
+OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores text[]) RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN
