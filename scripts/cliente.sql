@@ -32,7 +32,7 @@ BEGIN
 
 	SELECT valor_total INTO total_venda FROM venda WHERE id_venda = NEW.id_venda;
 
-	pontos_gerados := floor(total_venda / 10);
+	pontos_gerados := floor(total_venda);
 
 	IF pontos_gerados > 0 THEN
 		UPDATE cliente
