@@ -1,28 +1,32 @@
+-- DROP FUNCTION IF EXISTS aplicar_cupom_venda (int, text, int);
 CREATE
-OR REPLACE FUNCTION aplicar_cupom_venda (id_venda int, codigo_voucher text, id_cliente int) RETURNS void AS $$
+OR REPLACE FUNCTION aplicar_cupom_venda (
+    id_venda_p int,
+    codigo_voucher_p text,
+    id_cliente_p int
+) RETURNS void AS $$
 BEGIN
-    SELECT id_resgate FROM resgate_cupom
-    WHERE codigo_voucher = desconto_voucher AND id_cliente = id_cliente AND status = 'pendente';
 
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Voucher % não encontrado ou já utilizado', desconto_voucher;
+    IF NOT EXISTS (SELECT id_resgate FROM resgate_cupom
+    WHERE codigo_voucher = codigo_voucher_p AND id_cliente = id_cliente_p AND status = 'pendente') THEN
+        RAISE EXCEPTION 'Voucher % não encontrado ou já utilizado', codigo_voucher_p;
     END IF;
 
     -- Atualiza o status do cupom para 'aprovado'
     UPDATE resgate_cupom
     SET status = 'aprovado'
-    WHERE codigo_voucher = codigo_voucher AND id_cliente = id_cliente;
+    WHERE codigo_voucher = codigo_voucher_p AND id_cliente = id_cliente_p;
 
     -- Atualiza a venda com o desconto aplicado
     UPDATE venda
-    SET desconto_voucher = codigo_voucher
-    WHERE venda.id_venda = id_venda;
+    SET desconto_voucher = codigo_voucher_p
+    WHERE venda.id_venda = id_venda_p;
 
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE
-OR REPLACE FUNCTION resgatar_cupom (cpf_cliente_p int, id_cupom_p int) RETURNS void AS $$
+OR REPLACE FUNCTION resgatar_cupom (cpf_cliente_p text, id_cupom_p int) RETURNS void AS $$
 DECLARE
     cliente_cupom cupons_disponiveis_por_cliente%ROWTYPE;
 BEGIN
@@ -35,14 +39,19 @@ BEGIN
     END IF;
 
     -- Verifica se o cliente tem pontos suficientes
-    IF cliente_cupom.pontos <= cliente_cupom.pontos_necessarios THEN
+    IF cliente_cupom.pontos_cliente <= cliente_cupom.pontos_necessarios THEN
         RAISE EXCEPTION 'Cliente com CPF % não possui pontos suficientes para resgatar o cupom', cpf_cliente_p;
     END IF;
 
     -- Insere o resgate do cupom
     INSERT INTO resgate_cupom (id_cliente, id_cupom, codigo_voucher)
-    VALUES (cliente_row.id_cliente, cupom_row.id_cupom,
+    VALUES (cliente_cupom.id_cliente, cliente_cupom.id_cupom,
             substring(md5(random()::text), 1, 8));
+
+    -- Atualiza os pontos do cliente
+    UPDATE cliente
+    SET pontos = pontos - cliente_cupom.pontos_necessarios
+    WHERE cpf = cpf_cliente_p;
 
 END;
 $$ LANGUAGE plpgsql;
