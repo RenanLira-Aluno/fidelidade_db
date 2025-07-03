@@ -116,6 +116,11 @@ BEGIN
         RAISE EXCEPTION 'Cliente com CPF % não encontrado', cpf_cliente;
     END IF;
 
+    -- Verifica se já existe uma venda em andamento para o cliente
+    IF EXISTS (SELECT 1 FROM venda WHERE id_cliente = id_cliente AND status = 'preparando') THEN
+        RAISE EXCEPTION 'Já existe uma venda em andamento para o cliente com CPF %', cpf_cliente;
+    END IF;
+
     -- Cria uma nova venda com o status 'preparando'
     INSERT INTO venda (id_cliente, valor_total)
     VALUES (id_cliente, 0.00)
