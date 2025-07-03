@@ -250,6 +250,9 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+--Função genérica remover
+
+
 CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
 RETURNS void AS $$
 DECLARE
@@ -258,6 +261,11 @@ BEGIN
     IF nome_tabela = 'cliente' THEN
         PERFORM excluir_cliente(
             cpf_p := valores[1]
+        );
+
+    ELSIF nome_tabela = 'produto' THEN
+        PERFORM excluir_produto(
+            codigo_p := valores[1]
         );
 
     ELSE

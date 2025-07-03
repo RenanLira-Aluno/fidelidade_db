@@ -99,3 +99,29 @@ EXCEPTION
         END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+--Função excluir produto
+
+CREATE OR REPLACE FUNCTION excluir_produto(codigo_p TEXT)
+RETURNS void AS $$
+BEGIN
+    UPDATE produto
+    SET disponivel = false
+    WHERE codigo = codigo_p;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Produto com código % não encontrado', codigo_p;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+select excluir_produto('PROD001')
+
+--View produtos disponiveis
+
+CREATE OR REPLACE VIEW produtos_disponiveis AS
+SELECT *
+FROM produto
+WHERE disponivel = true;
+
+select * from produtos_disponiveis
