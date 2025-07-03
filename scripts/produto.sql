@@ -117,6 +117,11 @@ $$ LANGUAGE plpgsql;
 
 select excluir_produto('PROD001')
 
+--Adicionando coluna disponivel em produto
+
+ALTER TABLE produto
+ADD COLUMN disponivel BOOLEAN DEFAULT true;
+
 --View produtos disponiveis
 
 CREATE OR REPLACE VIEW produtos_disponiveis AS
