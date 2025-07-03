@@ -1,3 +1,4 @@
+-- Trigger de validação de dados do cliente
 CREATE
 OR REPLACE FUNCTION validar_cliente () RETURNS TRIGGER AS $$
 begin
@@ -19,6 +20,8 @@ CREATE TRIGGER validar_cliente_trigger BEFORE INSERT
 OR
 UPDATE ON cliente FOR EACH ROW
 EXECUTE PROCEDURE validar_cliente ();
+
+-- Trigger para gerar pontos para o cliente após a venda ser finalizada
 
 CREATE
 OR REPLACE FUNCTION fn_gerar_pontos_cliente () RETURNS TRIGGER AS $$
@@ -53,6 +56,8 @@ UPDATE ON venda FOR EACH ROW WHEN (
 )
 EXECUTE FUNCTION fn_gerar_pontos_cliente ();
 
+-- Trigger para atualizar a categoria do cliente quando os pontos mudarem
+
 CREATE
 OR REPLACE FUNCTION fn_atualizar_categoria_cliente () RETURNS TRIGGER AS $$
 DECLARE
@@ -79,6 +84,8 @@ CREATE TRIGGER tg_atualizar_categoria_cliente
 AFTER
 UPDATE ON cliente FOR EACH ROW WHEN (OLD.pontos <> NEW.pontos)
 EXECUTE FUNCTION fn_atualizar_categoria_cliente ();
+
+-- Função para cadastrar cliente
 
 CREATE
 OR replace FUNCTION cadastrar_cliente (
@@ -107,6 +114,8 @@ exception
 		end if;
 end;
 $$ LANGUAGE plpgsql;
+
+-- Função para atualizar dados do cliente
 
 CREATE
 OR REPLACE FUNCTION atualizar_dados_cliente (
@@ -146,6 +155,8 @@ exception
 
 END;
 $$ LANGUAGE plpgsql;
+
+-- Função para excluir cliente (marcar como inativo)
 
 CREATE
 OR REPLACE FUNCTION excluir_cliente (cpf_p TEXT) RETURNS void AS $$
@@ -187,8 +198,10 @@ SELECT
 FROM
 	clientes_ativos;
 
-DROP VIEW IF EXISTS cupons_disponiveis_por_cliente;
 
+-- View para listar cupons disponíveis por client
+
+DROP VIEW IF EXISTS cupons_disponiveis_por_cliente;
 CREATE OR REPLACE VIEW
 	cupons_disponiveis_por_cliente AS
 SELECT

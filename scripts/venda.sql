@@ -1,4 +1,6 @@
 
+-- Trigger para trocar cupom de desconto em uma venda
+
 CREATE OR REPLACE FUNCTION fn_trocar_cupom() RETURNS TRIGGER AS $$
 BEGIN
 
@@ -25,6 +27,7 @@ BEFORE
 UPDATE ON venda
 FOR EACH ROW EXECUTE FUNCTION fn_trocar_cupom();
 
+-- Trigger para atualizar o valor total da venda após inserção de item
 
 CREATE OR REPLACE FUNCTION fn_atualizar_valor_total() RETURNS TRIGGER AS $$
 BEGIN
@@ -42,6 +45,7 @@ CREATE TRIGGER tg_atualizar_valor_total AFTER
 INSERT ON item_venda
 FOR EACH ROW EXECUTE FUNCTION fn_atualizar_valor_total();
 
+-- Função para fechar a venda e aplicar cupom de desconto, se houver
 
 CREATE OR REPLACE FUNCTION fechar_venda(id_v int) RETURNS void AS $$
 DECLARE
@@ -77,6 +81,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Função para cancelar uma venda e reajustar o estoque dos produtos
 
 CREATE OR REPLACE FUNCTION cancelar_venda(id_venda int) RETURNS void AS $$
 BEGIN
@@ -98,6 +103,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Função para abrir uma nova venda
 
 CREATE OR REPLACE FUNCTION abrir_venda(cpf_cliente varchar(14)) RETURNS int AS $$
 DECLARE

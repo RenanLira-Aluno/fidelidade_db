@@ -1,4 +1,7 @@
 -- DROP FUNCTION IF EXISTS aplicar_cupom_venda (int, text, int);
+
+-- Função para aplicar cupom de desconto em uma venda
+
 CREATE
 OR REPLACE FUNCTION aplicar_cupom_venda (
     id_venda_p int,
@@ -24,6 +27,8 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+-- Função para resgatar cupom de desconto
 
 CREATE
 OR REPLACE FUNCTION resgatar_cupom (cpf_cliente_p text, id_cupom_p int) RETURNS void AS $$

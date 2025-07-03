@@ -203,6 +203,8 @@ VALUES
 		60
 	);
 
+-- Função genérica de inserção
+
 CREATE
 OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores text[]) RETURNS void AS $$
 DECLARE
@@ -251,7 +253,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 --Função genérica remover
-
 
 CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
 RETURNS void AS $$

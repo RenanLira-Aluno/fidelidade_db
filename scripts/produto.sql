@@ -1,3 +1,5 @@
+-- Trigger para atualizar o estoque após inserção ou remoção de item de venda
+
 CREATE OR REPLACE FUNCTION fn_atualizar_estoque() RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
@@ -22,6 +24,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Trigger para atualizar o estoque após inserção ou remoção de item de venda
 
 CREATE TRIGGER tg_atualizar_estoque AFTER
 INSERT
@@ -29,6 +32,7 @@ OR
 DELETE ON item_venda
 FOR EACH ROW EXECUTE FUNCTION fn_atualizar_estoque();
 
+-- função de inserir item de venda
 
 CREATE OR REPLACE FUNCTION registrar_item_venda(id_venda_p int, cod_produto text, quantidade int) RETURNS void AS $$
 DECLARE
@@ -53,6 +57,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Função para remover item de venda
 
 CREATE OR REPLACE FUNCTION remover_item_venda(id_item int) RETURNS void AS $$
 BEGIN
@@ -67,6 +72,8 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+-- Função para cadastrar produto
 
 CREATE OR REPLACE FUNCTION cadastrar_produto(
     id_produto_p INT,
