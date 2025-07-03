@@ -249,3 +249,24 @@ EXCEPTION
         RAISE EXCEPTION 'Erro ao inserir na tabela %: %', nome_tabela, message_error;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
+RETURNS void AS $$
+DECLARE
+    message_error TEXT;
+BEGIN
+    IF nome_tabela = 'cliente' THEN
+        PERFORM excluir_cliente(
+            cpf_p := valores[1]
+        );
+
+    ELSE
+        RAISE EXCEPTION 'Remoção lógica não implementada para a tabela %', nome_tabela;
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        GET STACKED DIAGNOSTICS message_error = MESSAGE_TEXT;
+        RAISE EXCEPTION 'Erro ao remover da tabela %: %', nome_tabela, message_error;
+END;
+$$ LANGUAGE plpgsql;
