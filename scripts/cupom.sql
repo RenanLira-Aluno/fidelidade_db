@@ -1,7 +1,22 @@
--- DROP FUNCTION IF EXISTS aplicar_cupom_venda (int, text, int);
+-- Trigger para verificar se o cliente já possui um cupom de desconto pendente
+CREATE
+OR REPLACE FUNCTION verificar_cupom_pendente () RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM resgate_cupom
+        WHERE id_cliente = NEW.id_cliente
+        AND status IN ('pendente', 'aprovado')
+    ) THEN
+        RAISE EXCEPTION 'Cliente com ID % já possui um cupom de desconto pendente', NEW.id_cliente;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_verificar_cupom_pendente BEFORE INSERT ON resgate_cupom FOR EACH ROW
+EXECUTE FUNCTION verificar_cupom_pendente ();
 
 -- Função para aplicar cupom de desconto em uma venda
-
 CREATE
 OR REPLACE FUNCTION aplicar_cupom_venda (
     id_venda_p int,
@@ -29,7 +44,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Função para resgatar cupom de desconto
-
 CREATE
 OR REPLACE FUNCTION resgatar_cupom (cpf_cliente_p text, id_cupom_p int) RETURNS void AS $$
 DECLARE
