@@ -269,6 +269,11 @@ BEGIN
             codigo_p := valores[1]
         );
 
+    ELSIF nome_tabela = 'categoria_programa' THEN
+        PERFORM excluir_categoria_programa(
+            cod_p := valores[1]::INT
+        );
+
     ELSE
         RAISE EXCEPTION 'Remoção lógica não implementada para a tabela %', nome_tabela;
     END IF;
