@@ -1,4 +1,28 @@
 
+-- Trigger para verificar se já existe uma venda em andamento para o cliente
+
+CREATE OR REPLACE FUNCTION fn_verificar_venda_em_andamento() RETURNS TRIGGER AS $$
+BEGIN
+
+    -- Verifica se já existe uma venda em andamento para o cliente
+    IF EXISTS (
+        SELECT 1 FROM venda
+        WHERE id_cliente = NEW.id_cliente
+        AND status = 'preparando'
+        AND id_venda <> NEW.id_venda -- Ignora a venda atual
+    ) THEN
+        RAISE EXCEPTION 'Já existe uma venda em andamento para o cliente com ID %', NEW.id_cliente;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER tg_verificar_venda_em_andamento
+BEFORE
+INSERT ON venda
+FOR EACH ROW EXECUTE FUNCTION fn_verificar_venda_em_andamento();
+
 -- Trigger para trocar cupom de desconto em uma venda
 
 CREATE OR REPLACE FUNCTION fn_trocar_cupom() RETURNS TRIGGER AS $$
@@ -114,11 +138,6 @@ BEGIN
     SELECT ca.id_cliente INTO id_cliente FROM clientes_ativos ca WHERE cpf = cpf_cliente;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Cliente com CPF % não encontrado', cpf_cliente;
-    END IF;
-
-    -- Verifica se já existe uma venda em andamento para o cliente
-    IF EXISTS (SELECT 1 FROM venda WHERE id_cliente = id_cliente AND status = 'preparando') THEN
-        RAISE EXCEPTION 'Já existe uma venda em andamento para o cliente com CPF %', cpf_cliente;
     END IF;
 
     -- Cria uma nova venda com o status 'preparando'
