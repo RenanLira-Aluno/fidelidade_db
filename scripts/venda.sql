@@ -23,12 +23,23 @@ BEFORE
 INSERT ON venda
 FOR EACH ROW EXECUTE FUNCTION fn_verificar_venda_em_andamento();
 
--- Trigger para trocar cupom de desconto em uma venda
+-- Trigger para verificar se o cupom de desconto está expirado e trocar o cupom
 
 CREATE OR REPLACE FUNCTION fn_trocar_cupom() RETURNS TRIGGER AS $$
 BEGIN
 
     IF NEW.desconto_voucher IS NOT NULL and OLD.status = 'preparando' THEN
+        
+        -- Verifica se o cupom está expirado
+        IF EXISTS (
+            SELECT 1 FROM resgate_cupom
+            WHERE codigo_voucher = NEW.desconto_voucher
+            AND id_cliente = NEW.id_cliente
+            AND data_expiracao < NOW()
+        ) THEN
+            RAISE EXCEPTION 'O cupom % está expirado', NEW.desconto_voucher;
+        END IF;
+        
         -- Verifica se a venda já possui um cupom aplicado
         IF OLD.desconto_voucher IS NOT NULL THEN
             -- Se já possui, remove o cupom antigo
