@@ -277,9 +277,9 @@ BEGIN
         );
 
 	ELSEIF nome_tabela = 'venda' THEN
-		PERFORM excluir_venda(
-			id_venda_p := valores[1]::INT
-		);
+		PERFORM cancelar_venda(
+			id_venda := valores[1]::INT
+		)
 
     ELSE
         RAISE EXCEPTION 'Remoção lógica não implementada para a tabela %', nome_tabela;
