@@ -159,3 +159,31 @@ BEGIN
     return id_venda;
 END;
 $$ LANGUAGE plpgsql;
+
+--Adicionando coluna ativo em venda
+
+ALTER TABLE venda
+ADD COLUMN ativo BOOLEAN DEFAULT true;
+
+
+--Função para excluir logicamente registro de venda
+
+CREATE OR REPLACE FUNCTION excluir_venda(id_venda_p INT)
+RETURNS void AS $$
+BEGIN
+    UPDATE venda
+    SET ativo = false
+    WHERE id_venda = id_venda_p;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Venda com ID % não encontrada.', id_venda_p;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+--View com vendas ativas
+
+CREATE OR REPLACE VIEW vendas_disponiveis AS
+SELECT *
+FROM venda
+WHERE ativo = true;
