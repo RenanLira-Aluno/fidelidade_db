@@ -255,7 +255,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 --Função genérica remover
-
 CREATE
 OR REPLACE FUNCTION remover (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
 DECLARE
@@ -276,7 +275,7 @@ BEGIN
             cod_p := valores[1]::INT
         );
 
-	ELSEIF nome_tabela = 'venda' THEN
+	ELSIF nome_tabela = 'venda' THEN
 		PERFORM cancelar_venda(
 			id_venda := valores[1]::INT
 		)
