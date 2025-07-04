@@ -256,8 +256,8 @@ $$ LANGUAGE plpgsql;
 
 --Função genérica remover
 
-CREATE
-OR REPLACE FUNCTION remover (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
+RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN
@@ -276,20 +276,25 @@ BEGIN
             cod_p := valores[1]::INT
         );
 
-	ELSIF nome_tabela = 'venda' THEN
-		PERFORM cancelar_venda(
-			id_venda := valores[1]::INT
-		);
+    ELSIF nome_tabela = 'venda' THEN
+        PERFORM cancelar_venda(
+            id_venda := valores[1]::INT
+        );
 
-	 ELSIF nome_tabela = 'cupom' THEN
+    ELSIF nome_tabela = 'cupom' THEN
         PERFORM excluir_cupom(
             id_cupom_p := valores[1]::INT
         );
 
-	ELSIF nome_tabela = 'item_venda' THEN
-		PERFORM remover_item_venda(
-			id_item_p := valores[1]::INT
-		);
+    ELSIF nome_tabela = 'item_venda' THEN
+        PERFORM remover_item_venda(
+            valores[1]::INT
+        );
+
+    ELSIF nome_tabela = 'resgate_cupom' THEN
+        PERFORM excluir_resgate_cupom(
+            codigo_voucher_p := valores[1]
+        );
 
     ELSE
         RAISE EXCEPTION 'Remoção lógica não implementada para a tabela %', nome_tabela;
