@@ -120,6 +120,41 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+-- Função para atualizar produto
+
+CREATE OR REPLACE FUNCTION atualizar_produto(
+    codigo_p VARCHAR,
+    nome_p VARCHAR,
+    descricao_p TEXT,
+    preco_p DECIMAL,
+    categoria_p VARCHAR,
+    estoque_p INT
+) RETURNS void AS $$
+BEGIN
+
+    -- Verifica se o produto existe
+    IF NOT EXISTS (SELECT 1 FROM produto WHERE codigo = codigo_p) THEN
+        RAISE EXCEPTION 'Produto com código % não encontrado', codigo_p;
+    END IF;
+
+    -- Validação de estoque negativo
+    IF estoque_p < 0 THEN
+        RAISE EXCEPTION 'O estoque não pode ser negativo';
+    END IF;
+
+    -- Atualiza o produto
+    UPDATE produto
+    SET nome = COALESCE(nome_p, nome),
+        descricao = COALESCE(descricao_p, descricao),
+        preco = COALESCE(preco_p, preco),
+        categoria = COALESCE(categoria_p, categoria),
+        estoque = COALESCE(estoque_p, estoque)
+    WHERE codigo = codigo_p;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 --Função excluir produto
 
 CREATE OR REPLACE FUNCTION excluir_produto(codigo_p TEXT)

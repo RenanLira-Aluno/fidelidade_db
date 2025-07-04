@@ -290,3 +290,39 @@ EXCEPTION
         RAISE EXCEPTION 'Erro ao remover da tabela %: %', nome_tabela, message_error;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Função genérica de atualização
+CREATE
+OR REPLACE FUNCTION atualizar (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
+DECLARE
+	message_error TEXT;
+BEGIN
+	IF nome_tabela = 'cliente' THEN
+		PERFORM atualizar_dados_cliente(
+			cliente_id := valores[1]::INT,
+			nome_p     := valores[2],
+			email_p    := valores[3],
+			telefone_p := valores[4]
+		);
+
+	ELSIF nome_tabela = 'produto' THEN
+		PERFORM atualizar_produto(
+			codigo_p     := valores[1],
+			nome_p       := valores[2],
+			descricao_p  := valores[3],
+			preco_p      := valores[4]::DECIMAL,
+			categoria_p  := valores[5],
+			estoque_p    := valores[6]::INT
+		)
+	ELSIF nome_tabela = 'categoria_programa' THEN
+		PERFORM atualizar_categoria_programa(
+			cod_p     := valores[1]::INT,
+			nome_p    := valores[2],
+			descricao_p := valores[3]
+		);
+	ELSE
+		RAISE EXCEPTION 'Atualização não implementada para a tabela %', nome_tabela;
+	END IF;
+
+END;
+$$ LANGUAGE plpgsql;
