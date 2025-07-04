@@ -254,3 +254,24 @@ VALUES
         60,
         30
     );
+
+--Função para excluir cupom
+
+CREATE OR REPLACE FUNCTION excluir_cupom(id_cupom_p INT)
+RETURNS void AS $$
+BEGIN
+    UPDATE cupom
+    SET disponivel = false
+    WHERE id_cupom = id_cupom_p;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Cupom com ID % não encontrado.', id_cupom_p;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--View de cupons disponiveis
+
+CREATE OR REPLACE VIEW cupons_disponiveis AS
+SELECT * FROM CUPOM WHERE disponivel = true
