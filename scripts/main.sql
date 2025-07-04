@@ -207,8 +207,8 @@ VALUES
 	);
 
 -- Função genérica de inserção
-CREATE
-OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores text[]) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION inserir(nome_tabela TEXT, VARIADIC valores TEXT[])
+RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN
@@ -241,6 +241,16 @@ BEGIN
             preco_p      := valores[5]::DECIMAL,
             categoria_p  := valores[6],
             estoque_p    := valores[7]::INT
+        );
+
+    ELSIF nome_tabela = 'cupom' THEN
+        PERFORM cadastrar_cupom(
+            cod_categoria_p        := valores[1]::INT,
+            nome_p                 := valores[2],
+            descricao_p            := valores[3],
+            pontos_necessarios_p   := valores[4]::INT,
+            desconto_p             := valores[5]::INT,
+            disponivel_p           := COALESCE(valores[6]::BOOLEAN, true)
         );
 
     ELSE

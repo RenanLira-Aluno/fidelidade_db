@@ -255,6 +255,48 @@ VALUES
         30
     );
 
+
+--Função para cadastrar cupom
+
+CREATE OR REPLACE FUNCTION cadastrar_cupom(
+    cod_categoria_p INT,
+    nome_p TEXT,
+    descricao_p TEXT,
+    pontos_necessarios_p INT,
+    desconto_p INT,
+    disponivel_p BOOLEAN DEFAULT true
+)
+RETURNS void AS $$
+BEGIN
+    -- Verifica se a categoria existe
+    IF NOT EXISTS (
+        SELECT 1 FROM categoria_programa WHERE cod = cod_categoria_p
+    ) THEN
+        RAISE EXCEPTION 'Categoria de código % não encontrada.', cod_categoria_p;
+    END IF;
+
+    -- Verifica se o desconto é válido
+    IF desconto_p < 0 OR desconto_p > 100 THEN
+        RAISE EXCEPTION 'Desconto deve estar entre 0 e 100.';
+    END IF;
+
+    -- Verifica se os pontos são positivos
+    IF pontos_necessarios_p < 0 THEN
+        RAISE EXCEPTION 'Pontos necessários não podem ser negativos.';
+    END IF;
+
+    -- Insere o cupom
+    INSERT INTO cupom (
+        cod_categoria, nome, descricao,
+        pontos_necessarios, desconto, disponivel
+    )
+    VALUES (
+        cod_categoria_p, nome_p, descricao_p,
+        pontos_necessarios_p, desconto_p, disponivel_p
+    );
+END;
+$$ LANGUAGE plpgsql;
+
 --Função para excluir cupom
 
 CREATE OR REPLACE FUNCTION excluir_cupom(id_cupom_p INT)
