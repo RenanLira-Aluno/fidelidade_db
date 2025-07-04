@@ -1,6 +1,7 @@
 -- Trigger para atualizar o estoque após inserção ou remoção de item de venda
 
-CREATE OR REPLACE FUNCTION fn_atualizar_estoque() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION fn_atualizar_estoque()
+RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         -- Verifica se o estoque é suficiente
@@ -12,12 +13,24 @@ BEGIN
         UPDATE produto
         SET estoque = estoque - NEW.quantidade
         WHERE id_produto = NEW.id_produto;
+
+        -- Se o estoque zerar, tornar o produto indisponível
+        UPDATE produto
+        SET disponivel = false
+        WHERE id_produto = NEW.id_produto AND estoque = 0;
+
         RETURN NEW;
 
     ELSIF TG_OP = 'DELETE' THEN
+        -- Repor o estoque ao excluir item da venda
         UPDATE produto
         SET estoque = estoque + OLD.quantidade
         WHERE id_produto = OLD.id_produto;
+
+        -- Se o estoque ficar maior que zero, tornar o produto disponível
+        UPDATE produto
+        SET disponivel = true
+        WHERE id_produto = OLD.id_produto AND estoque > 0;
 
         RETURN OLD;
     END IF;
