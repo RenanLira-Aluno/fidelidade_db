@@ -207,8 +207,8 @@ VALUES
 	);
 
 -- Função genérica de inserção
-CREATE
-OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores text[]) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION inserir(nome_tabela TEXT, VARIADIC valores text[])
+RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN
@@ -242,6 +242,12 @@ BEGIN
             categoria_p  := valores[6],
             estoque_p    := valores[7]::INT
         );
+	ELSIF nome_tabalea = 'item_venda' THEN
+		PERFORM registrar_item_venda(
+			id_venda_p := valores[1]::INT,
+			cod_produto := valores[2],
+			quantidade := valores[3]::INT
+		);
 
     ELSE
         RAISE EXCEPTION 'Tabela % não implementada para inserção', nome_tabela;
