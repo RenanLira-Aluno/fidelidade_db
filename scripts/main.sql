@@ -51,6 +51,9 @@ CREATE TABLE
 	);
 
 ALTER TABLE resgate_cupom
+ADD COLUMN data_expiracao timestamp DEFAULT (now() + interval '30 days') NOT NULL;
+
+ALTER TABLE resgate_cupom
 ADD CONSTRAINT codigo_voucher_unique UNIQUE (codigo_voucher);
 
 CREATE TABLE
@@ -204,7 +207,6 @@ VALUES
 	);
 
 -- Função genérica de inserção
-
 CREATE
 OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores text[]) RETURNS void AS $$
 DECLARE
@@ -253,7 +255,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 --Função genérica remover
-
 CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
 RETURNS void AS $$
 DECLARE
@@ -272,6 +273,16 @@ BEGIN
     ELSIF nome_tabela = 'categoria_programa' THEN
         PERFORM excluir_categoria_programa(
             cod_p := valores[1]::INT
+        );
+
+    ELSIF nome_tabela = 'venda' THEN
+        PERFORM cancelar_venda(
+            id_venda := valores[1]::INT
+        );
+
+    ELSIF nome_tabela = 'cupom' THEN
+        PERFORM excluir_cupom(
+            id_cupom_p := valores[1]::INT
         );
 
     ELSE
