@@ -275,3 +275,31 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE VIEW cupons_disponiveis AS
 SELECT * FROM CUPOM WHERE disponivel = true
+
+
+--Função excluir resgate cupom
+
+CREATE OR REPLACE FUNCTION excluir_resgate_cupom(codigo_voucher_p TEXT)
+RETURNS void AS $$
+DECLARE
+    status_resgate_atual status_resgate;
+BEGIN
+    -- Busca o status do resgate
+    SELECT status INTO status_resgate_atual
+    FROM resgate_cupom
+    WHERE codigo_voucher = codigo_voucher_p;
+
+    -- Verifica se existe
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Resgate com código % não encontrado.', codigo_voucher_p;
+    END IF;
+
+    -- Só permite deletar se for pendente ou expirado
+    IF status_resgate_atual = 'pendente' THEN
+        DELETE FROM resgate_cupom
+        WHERE codigo_voucher = codigo_voucher_p;
+    ELSE
+        RAISE EXCEPTION 'Não é permitido excluir resgates com status %.', status_resgate_atual;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;

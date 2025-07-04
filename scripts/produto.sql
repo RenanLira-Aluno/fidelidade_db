@@ -72,19 +72,21 @@ $$ LANGUAGE plpgsql;
 
 -- Função para remover item de venda
 
-CREATE OR REPLACE FUNCTION remover_item_venda(id_item int) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION remover_item_venda(id_item_p INT)
+RETURNS void AS $$
 BEGIN
-
     -- Verifica se o item existe
-    IF NOT EXISTS (SELECT 1 FROM item_venda WHERE id_item = id_item) THEN
-        RAISE EXCEPTION 'Item de venda com ID % não encontrado', id_item;
+    IF NOT EXISTS (SELECT 1 FROM item_venda WHERE id_item = id_item_p) THEN
+        RAISE EXCEPTION 'Item de venda com ID % não encontrado', id_item_p;
     END IF;
 
     -- Remove o item da tabela item_venda
-    DELETE FROM item_venda WHERE id_item = id_item;
-
+    DELETE FROM item_venda WHERE id_item = id_item_p;
 END;
 $$ LANGUAGE plpgsql;
+
+DROP FUNCTION IF EXISTS remover_item_venda(INT);
+
 
 -- Função para cadastrar produto
 

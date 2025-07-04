@@ -255,6 +255,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 --Função genérica remover
+
 CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
 RETURNS void AS $$
 DECLARE
@@ -283,6 +284,16 @@ BEGIN
     ELSIF nome_tabela = 'cupom' THEN
         PERFORM excluir_cupom(
             id_cupom_p := valores[1]::INT
+        );
+
+    ELSIF nome_tabela = 'item_venda' THEN
+        PERFORM remover_item_venda(
+            valores[1]::INT
+        );
+
+    ELSIF nome_tabela = 'resgate_cupom' THEN
+        PERFORM excluir_resgate_cupom(
+            codigo_voucher_p := valores[1]
         );
 
     ELSE
