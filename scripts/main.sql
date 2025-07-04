@@ -253,6 +253,12 @@ BEGIN
             disponivel_p           := COALESCE(valores[6]::BOOLEAN, true)
         );
 
+	ELSIF nome_tabela = 'resgate_cupom' THEN
+        PERFORM resgatar_cupom(
+            cpf_cliente_p := valores[1],
+            id_cupom_p    := valores[2]::INT
+        );
+
     ELSE
         RAISE EXCEPTION 'Tabela % não implementada para inserção', nome_tabela;
     END IF;
@@ -263,6 +269,7 @@ EXCEPTION
         RAISE EXCEPTION 'Erro ao inserir na tabela %: %', nome_tabela, message_error;
 END;
 $$ LANGUAGE plpgsql;
+
 
 --Função genérica remover
 
