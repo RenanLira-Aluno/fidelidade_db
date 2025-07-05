@@ -353,7 +353,7 @@ $$ LANGUAGE plpgsql;
 --View de cupons disponiveis
 
 CREATE OR REPLACE VIEW cupons_disponiveis AS
-SELECT * FROM CUPOM WHERE disponivel = true
+SELECT * FROM CUPOM WHERE disponivel = true;
 
 
 --Função excluir resgate cupom

@@ -45,10 +45,6 @@ CREATE OR REPLACE VIEW categorias_ativas AS
 SELECT *
 FROM categoria_programa
 WHERE ativo = true;
---Alter Table para adicionar coluna ativo
-
-ALTER TABLE categoria_programa
-ADD COLUMN ativo BOOLEAN DEFAULT true;
 
 
 --Função para cadastrar categoria programa

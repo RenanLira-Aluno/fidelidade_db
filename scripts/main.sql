@@ -82,6 +82,8 @@ CREATE TABLE
 		status status_venda DEFAULT ('preparando')
 	);
 
+ALTER TABLE venda ENABLE ROW LEVEL SECURITY;
+
 CREATE TABLE
 	item_venda (
 		id_item serial PRIMARY KEY,
@@ -90,6 +92,14 @@ CREATE TABLE
 		quantidade int NOT NULL,
 		preco decimal(10, 2) NOT NULL,
 		subtotal decimal(10, 2) NOT NULL
+	);
+
+CREATE TYPE cargo AS ENUM('vendedor', 'gerente', 'administrador');
+
+CREATE TABLE
+	funcionario (
+		login_pg varchar(50) PRIMARY KEY,
+		cargo cargo NOT NULL
 	);
 
 -- CATEGORIAS
@@ -207,8 +217,8 @@ VALUES
 	);
 
 -- Função genérica de inserção
-CREATE OR REPLACE FUNCTION inserir(nome_tabela TEXT, VARIADIC valores TEXT[])
-RETURNS void AS $$
+CREATE
+OR REPLACE FUNCTION inserir (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN
@@ -277,11 +287,9 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
-
 --Função genérica remover
-
-CREATE OR REPLACE FUNCTION remover(nome_tabela TEXT, VARIADIC valores TEXT[])
-RETURNS void AS $$
+CREATE
+OR REPLACE FUNCTION remover (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN
@@ -332,8 +340,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Função genérica de atualização
-CREATE OR REPLACE FUNCTION atualizar(nome_tabela TEXT, VARIADIC valores TEXT[])
-RETURNS void AS $$
+CREATE
+OR REPLACE FUNCTION atualizar (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
 DECLARE
     message_error TEXT;
 BEGIN

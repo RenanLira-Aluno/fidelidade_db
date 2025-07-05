@@ -172,8 +172,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select excluir_produto('PROD001')
-
 --Adicionando coluna disponivel em produto
 
 ALTER TABLE produto
@@ -186,4 +184,4 @@ SELECT *
 FROM produto
 WHERE disponivel = true;
 
-select * from produtos_disponiveis
+select * from produtos_disponiveis;

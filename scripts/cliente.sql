@@ -22,7 +22,6 @@ UPDATE ON cliente FOR EACH ROW
 EXECUTE PROCEDURE validar_cliente ();
 
 -- Trigger para gerar pontos para o cliente após a venda ser finalizada
-
 CREATE
 OR REPLACE FUNCTION fn_gerar_pontos_cliente () RETURNS TRIGGER AS $$
 DECLARE
@@ -57,7 +56,6 @@ UPDATE ON venda FOR EACH ROW WHEN (
 EXECUTE FUNCTION fn_gerar_pontos_cliente ();
 
 -- Trigger para atualizar a categoria do cliente quando os pontos mudarem
-
 CREATE
 OR REPLACE FUNCTION fn_atualizar_categoria_cliente () RETURNS TRIGGER AS $$
 DECLARE
@@ -86,7 +84,6 @@ UPDATE ON cliente FOR EACH ROW WHEN (OLD.pontos <> NEW.pontos)
 EXECUTE FUNCTION fn_atualizar_categoria_cliente ();
 
 -- Função para cadastrar cliente
-
 CREATE
 OR replace FUNCTION cadastrar_cliente (
 	nome_p text,
@@ -96,9 +93,14 @@ OR replace FUNCTION cadastrar_cliente (
 ) RETURNS void AS $$
 DECLARE
 	constraint_violada text;
+	cpf_formatado text := regexp_replace(cpf_completo, '[^0-9]', '', 'g');
 BEGIN
+	-- Inserir cliente na tabela cliente
 	insert into cliente (nome, cpf, email, telefone, cod_categoria) values
 	(nome_p, cpf_p, email_p, telefone_p, 1);
+
+	-- Criar usuario no banco postgres
+	EXECUTE format('CREATE USER %I WITH PASSWORD %L', cpf_formatado, cpf_formatado);
 exception
 	when unique_violation then
 		GET STACKED DIAGNOSTICS constraint_violada = CONSTRAINT_NAME;
@@ -116,7 +118,6 @@ end;
 $$ LANGUAGE plpgsql;
 
 -- Função para atualizar dados do cliente
-
 CREATE
 OR REPLACE FUNCTION atualizar_dados_cliente (
 	cliente_id int,
@@ -157,7 +158,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Função para excluir cliente (marcar como inativo)
-
 CREATE
 OR REPLACE FUNCTION excluir_cliente (cpf_p TEXT) RETURNS void AS $$
 BEGIN
@@ -190,17 +190,8 @@ SELECT
 		'86999168877'
 	);
 
-SELECT
-	atualizar_dados_cliente (1, 'Renan Silva', NULL, '86999168877');
-
-SELECT
-	*
-FROM
-	clientes_ativos;
-
 
 -- View para listar cupons disponíveis por client
-
 DROP VIEW IF EXISTS cupons_disponiveis_por_cliente;
 CREATE OR REPLACE VIEW
 	cupons_disponiveis_por_cliente AS
