@@ -1,19 +1,20 @@
 
 -- Trigger para verificar se já existe uma venda em andamento para o cliente
 
-CREATE OR REPLACE FUNCTION fn_verificar_venda_em_andamento() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION fn_verificar_venda_em_andamento()
+RETURNS TRIGGER AS $$
 BEGIN
-
     -- Verifica se já existe uma venda em andamento para o cliente
     IF EXISTS (
         SELECT 1 FROM venda
         WHERE id_cliente = NEW.id_cliente
         AND status = 'preparando'
-        AND id_venda <> NEW.id_venda -- Ignora a venda atual
+        AND id_venda <> NEW.id_venda
     ) THEN
         RAISE EXCEPTION 'Já existe uma venda em andamento para o cliente com ID %', NEW.id_cliente;
     END IF;
 
+    RETURN NEW;  -- 🔧 ESSENCIAL para triggers BEFORE INSERT/UPDATE
 END;
 $$ LANGUAGE plpgsql;
 
