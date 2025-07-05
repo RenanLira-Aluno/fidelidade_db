@@ -82,8 +82,6 @@ CREATE TABLE
 		status status_venda DEFAULT ('preparando')
 	);
 
-ALTER TABLE venda ENABLE ROW LEVEL SECURITY;
-
 CREATE TABLE
 	item_venda (
 		id_item serial PRIMARY KEY,
