@@ -312,6 +312,43 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--Função para atualizar cupom
+
+
+CREATE OR REPLACE FUNCTION atualizar_dados_cupom(
+    id_cupom_p INT,
+    cod_categoria_p INT DEFAULT NULL,
+    nome_p TEXT DEFAULT NULL,
+    descricao_p TEXT DEFAULT NULL,
+    pontos_necessarios_p INT DEFAULT NULL,
+    desconto_p INT DEFAULT NULL,
+    disponivel_p BOOLEAN DEFAULT NULL
+) RETURNS void AS $$
+BEGIN
+    -- Atualiza os dados do cupom com valores informados (ou mantém os atuais)
+    UPDATE cupom
+    SET
+        cod_categoria       = COALESCE(cod_categoria_p, cod_categoria),
+        nome                = COALESCE(nome_p, nome),
+        descricao           = COALESCE(descricao_p, descricao),
+        pontos_necessarios  = COALESCE(pontos_necessarios_p, pontos_necessarios),
+        desconto            = COALESCE(desconto_p, desconto),
+        disponivel          = COALESCE(disponivel_p, disponivel)
+    WHERE id_cupom = id_cupom_p;
+
+    -- Verifica se o cupom foi encontrado
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Cupom com ID % não encontrado.', id_cupom_p;
+    END IF;
+
+EXCEPTION
+    WHEN foreign_key_violation THEN
+        RAISE EXCEPTION 'Código de categoria informado não existe.';
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Erro ao atualizar dados do cupom: %', SQLERRM;
+END;
+$$ LANGUAGE plpgsql;
+
 
 --View de cupons disponiveis
 

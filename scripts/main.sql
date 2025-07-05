@@ -332,37 +332,54 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Função genérica de atualização
-CREATE
-OR REPLACE FUNCTION atualizar (nome_tabela TEXT, VARIADIC valores TEXT[]) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION atualizar(nome_tabela TEXT, VARIADIC valores TEXT[])
+RETURNS void AS $$
 DECLARE
-	message_error TEXT;
+    message_error TEXT;
 BEGIN
-	IF nome_tabela = 'cliente' THEN
-		PERFORM atualizar_dados_cliente(
-			cliente_id := valores[1]::INT,
-			nome_p     := valores[2],
-			email_p    := valores[3],
-			telefone_p := valores[4]
-		);
+    IF nome_tabela = 'cliente' THEN
+        PERFORM atualizar_dados_cliente(
+            cliente_id := valores[1]::INT,
+            nome_p     := valores[2],
+            email_p    := valores[3],
+            telefone_p := valores[4]
+        );
 
-	ELSIF nome_tabela = 'produto' THEN
-		PERFORM atualizar_produto(
-			codigo_p     := valores[1],
-			nome_p       := valores[2],
-			descricao_p  := valores[3],
-			preco_p      := valores[4]::DECIMAL,
-			categoria_p  := valores[5],
-			estoque_p    := valores[6]::INT
-		)
-	ELSIF nome_tabela = 'categoria_programa' THEN
-		PERFORM atualizar_categoria_programa(
-			cod_p     := valores[1]::INT,
-			nome_p    := valores[2],
-			descricao_p := valores[3]
-		);
-	ELSE
-		RAISE EXCEPTION 'Atualização não implementada para a tabela %', nome_tabela;
-	END IF;
+    ELSIF nome_tabela = 'produto' THEN
+        PERFORM atualizar_produto(
+            codigo_p     := valores[1],
+            nome_p       := valores[2],
+            descricao_p  := valores[3],
+            preco_p      := valores[4]::DECIMAL,
+            categoria_p  := valores[5],
+            estoque_p    := valores[6]::INT
+        );
 
+    ELSIF nome_tabela = 'categoria_programa' THEN
+        PERFORM atualizar_categoria_programa(
+            cod_p        := valores[1]::INT,
+            nome_p       := valores[2],
+            descricao_p  := valores[3]
+        );
+
+    ELSIF nome_tabela = 'cupom' THEN
+        PERFORM atualizar_dados_cupom(
+            id_cupom_p             := valores[1]::INT,
+            cod_categoria_p        := NULLIF(valores[2], '')::INT,
+            nome_p                 := valores[3],
+            descricao_p            := valores[4],
+            pontos_necessarios_p   := NULLIF(valores[5], '')::INT,
+            desconto_p             := NULLIF(valores[6], '')::INT,
+            disponivel_p           := NULLIF(valores[7], '')::BOOLEAN
+        );
+
+    ELSE
+        RAISE EXCEPTION 'Atualização não implementada para a tabela %', nome_tabela;
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        GET STACKED DIAGNOSTICS message_error = MESSAGE_TEXT;
+        RAISE EXCEPTION 'Erro ao atualizar a tabela %: %', nome_tabela, message_error;
 END;
 $$ LANGUAGE plpgsql;
