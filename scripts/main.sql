@@ -253,10 +253,17 @@ BEGIN
             disponivel_p           := COALESCE(valores[6]::BOOLEAN, true)
         );
 
-	ELSIF nome_tabela = 'resgate_cupom' THEN
+    ELSIF nome_tabela = 'resgate_cupom' THEN
         PERFORM resgatar_cupom(
             cpf_cliente_p := valores[1],
             id_cupom_p    := valores[2]::INT
+        );
+
+    ELSIF nome_tabela = 'categoria_programa' THEN
+        PERFORM cadastrar_categoria_programa(
+            cod_p     := valores[1]::INT,
+            nome_p    := valores[2],
+            pontos_p  := valores[3]::INT
         );
 
     ELSE

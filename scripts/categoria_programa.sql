@@ -50,18 +50,29 @@ WHERE ativo = true;
 ALTER TABLE categoria_programa
 ADD COLUMN ativo BOOLEAN DEFAULT true;
 
---Função para excluir uma categoria do programa
 
-CREATE OR REPLACE FUNCTION excluir_categoria_programa(cod_p INT)
+--Função para cadastrar categoria programa
+
+CREATE OR REPLACE FUNCTION cadastrar_categoria_programa(
+    cod_p INT,
+    nome_p TEXT,
+    pontos_p INT
+)
 RETURNS void AS $$
 BEGIN
-    UPDATE categoria_programa
-    SET ativo = false
-    WHERE cod = cod_p;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Categoria com código % não encontrada.', cod_p;
+    -- Verifica se já existe uma categoria com o mesmo código
+    IF EXISTS (SELECT 1 FROM categoria_programa WHERE cod = cod_p) THEN
+        RAISE EXCEPTION 'Código % já está cadastrado na tabela categoria_programa.', cod_p;
     END IF;
+
+    -- Verifica se os pontos são válidos
+    IF pontos_p < 0 THEN
+        RAISE EXCEPTION 'Pontos não podem ser negativos.';
+    END IF;
+
+    -- Insere a categoria
+    INSERT INTO categoria_programa (cod, nome, pontos)
+    VALUES (cod_p, nome_p, pontos_p);
 END;
 $$ LANGUAGE plpgsql;
 
