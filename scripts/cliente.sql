@@ -110,6 +110,8 @@ BEGIN
 
 	-- Criar usuario no banco postgres
 	EXECUTE format('CREATE USER %I WITH PASSWORD %L', cpf_formatado, cpf_formatado);
+	EXECUTE format('GRANT grupo_clientes TO %I', cpf_formatado);
+
 exception
 	when unique_violation then
 		GET STACKED DIAGNOSTICS constraint_violada = CONSTRAINT_NAME;
