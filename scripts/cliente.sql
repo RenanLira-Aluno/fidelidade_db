@@ -93,8 +93,17 @@ OR replace FUNCTION cadastrar_cliente (
 ) RETURNS void AS $$
 DECLARE
 	constraint_violada text;
-	cpf_formatado text := regexp_replace(cpf_completo, '[^0-9]', '', 'g');
+	cpf_formatado text := regexp_replace(cpf_p, '[^0-9]', '', 'g');
 BEGIN
+
+	-- Verificar se o CPF está apenas desativado
+	IF EXISTS (SELECT 1 FROM cliente WHERE cpf = cpf_formatado AND ativo = false) THEN
+		UPDATE cliente
+		SET ativo = true, nome = nome_p, email = email_p, telefone = telefone_p
+		WHERE cpf = cpf_formatado;
+		RETURN; -- Cliente reativado com sucesso
+	END IF;
+
 	-- Inserir cliente na tabela cliente
 	insert into cliente (nome, cpf, email, telefone, cod_categoria) values
 	(nome_p, cpf_p, email_p, telefone_p, 1);
@@ -133,7 +142,7 @@ BEGIN
 		nome = COALESCE(nome_p, nome),
 		email = COALESCE(email_p, email),
 		telefone = COALESCE(telefone_p, telefone)
-	WHERE id_cliente = cliente_id;
+	WHERE id_cliente = cliente_id and ativo = true;
 
 	if NOT FOUND then
 		RAISE EXCEPTION 'Cliente com id % não encontrado', cliente_id;
@@ -168,6 +177,8 @@ BEGIN
 	IF NOT FOUND THEN
 		RAISE EXCEPTION 'Cliente com CPF % não encontrado', cpf_p;
 	END IF;
+
+	EXECUTE format('DROP USER IF EXISTS %I', regexp_replace(cpf_p, '[^0-9]', '', 'g'));
 END;
 $$ LANGUAGE plpgsql;
 
@@ -190,9 +201,9 @@ SELECT
 		'86999168877'
 	);
 
-
 -- View para listar cupons disponíveis por client
 DROP VIEW IF EXISTS cupons_disponiveis_por_cliente;
+
 CREATE OR REPLACE VIEW
 	cupons_disponiveis_por_cliente AS
 SELECT
