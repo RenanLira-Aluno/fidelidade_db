@@ -55,10 +55,28 @@ CREATE OR REPLACE FUNCTION cadastrar_categoria_programa(
     pontos_p INT
 )
 RETURNS void AS $$
+DECLARE
+    categoria_ativa BOOLEAN;
 BEGIN
-    -- Verifica se já existe uma categoria com o mesmo código
-    IF EXISTS (SELECT 1 FROM categoria_programa WHERE cod = cod_p) THEN
-        RAISE EXCEPTION 'Código % já está cadastrado na tabela categoria_programa.', cod_p;
+    -- Verifica se o código da categoria já existe
+    SELECT ativo INTO categoria_ativa
+    FROM categoria_programa
+    WHERE cod = cod_p;
+
+    -- Se encontrou o código
+    IF FOUND THEN
+        IF categoria_ativa = false THEN
+            -- Reativa a categoria existente
+            UPDATE categoria_programa
+            SET ativo = true
+            WHERE cod = cod_p;
+
+            RAISE NOTICE 'Categoria com código % foi reativada com sucesso.', cod_p;
+            RETURN;
+        ELSE
+            -- Já está ativa
+            RAISE EXCEPTION 'Código % já está cadastrado e ativo na tabela categoria_programa.', cod_p;
+        END IF;
     END IF;
 
     -- Verifica se os pontos são válidos
@@ -66,9 +84,9 @@ BEGIN
         RAISE EXCEPTION 'Pontos não podem ser negativos.';
     END IF;
 
-    -- Insere a categoria
-    INSERT INTO categoria_programa (cod, nome, pontos)
-    VALUES (cod_p, nome_p, pontos_p);
+    -- Insere a nova categoria
+    INSERT INTO categoria_programa (cod, nome, pontos, ativo)
+    VALUES (cod_p, nome_p, pontos_p, true);
 END;
 $$ LANGUAGE plpgsql;
 
