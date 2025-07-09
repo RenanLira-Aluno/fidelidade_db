@@ -131,27 +131,37 @@ CREATE OR REPLACE FUNCTION atualizar_produto(
     categoria_p VARCHAR,
     estoque_p INT
 ) RETURNS void AS $$
+DECLARE
+    estoque_novo INT;
 BEGIN
-
     -- Verifica se o produto existe
     IF NOT EXISTS (SELECT 1 FROM produto WHERE codigo = codigo_p) THEN
-        RAISE EXCEPTION 'Produto com código % não encontrado', codigo_p;
+        RAISE EXCEPTION 'Produto com código % não encontrado.', codigo_p;
     END IF;
 
-    -- Validação de estoque negativo
-    IF estoque_p < 0 THEN
-        RAISE EXCEPTION 'O estoque não pode ser negativo';
+    -- Validação de estoque negativo (se informado)
+    IF estoque_p IS NOT NULL AND estoque_p < 0 THEN
+        RAISE EXCEPTION 'O estoque não pode ser negativo.';
     END IF;
+
+    -- Calcula o novo estoque com COALESCE
+    SELECT COALESCE(estoque_p, estoque) INTO estoque_novo
+    FROM produto
+    WHERE codigo = codigo_p;
 
     -- Atualiza o produto
     UPDATE produto
-    SET nome = COALESCE(nome_p, nome),
-        descricao = COALESCE(descricao_p, descricao),
-        preco = COALESCE(preco_p, preco),
-        categoria = COALESCE(categoria_p, categoria),
-        estoque = COALESCE(estoque_p, estoque)
+    SET
+        nome        = COALESCE(nome_p, nome),
+        descricao   = COALESCE(descricao_p, descricao),
+        preco       = COALESCE(preco_p, preco),
+        categoria   = COALESCE(categoria_p, categoria),
+        estoque     = estoque_novo,
+        disponivel  = CASE
+                        WHEN disponivel = false AND estoque_novo > 0 THEN true
+                        ELSE disponivel
+                      END
     WHERE codigo = codigo_p;
-
 END;
 $$ LANGUAGE plpgsql;
 
