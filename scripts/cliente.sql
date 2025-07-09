@@ -93,20 +93,19 @@ OR replace FUNCTION cadastrar_cliente (
 ) RETURNS void AS $$
 DECLARE
 	constraint_violada text;
-	cpf_formatado text := regexp_replace(cpf_p, '[^0-9]', '', 'g');
+	cpf_formatado text := regexp_replace(cpf_p, '\D', '', 'g');
 BEGIN
 
 	-- Verificar se o CPF está apenas desativado
-	IF EXISTS (SELECT 1 FROM cliente WHERE cpf = cpf_formatado AND ativo = false) THEN
+	IF EXISTS (SELECT 1 FROM cliente WHERE cpf = cpf_p AND ativo = false) THEN
 		UPDATE cliente
 		SET ativo = true, nome = nome_p, email = email_p, telefone = telefone_p
-		WHERE cpf = cpf_formatado;
-		RETURN; -- Cliente reativado com sucesso
+		WHERE cpf = cpf_p;
+	ELSE
+		-- Inserir cliente na tabela cliente
+		insert into cliente (nome, cpf, email, telefone, cod_categoria) values
+		(nome_p, cpf_p, email_p, telefone_p, 1);
 	END IF;
-
-	-- Inserir cliente na tabela cliente
-	insert into cliente (nome, cpf, email, telefone, cod_categoria) values
-	(nome_p, cpf_p, email_p, telefone_p, 1);
 
 	-- Criar usuario no banco postgres
 	EXECUTE format('CREATE USER %I WITH PASSWORD %L', cpf_formatado, cpf_formatado);
@@ -180,7 +179,7 @@ BEGIN
 		RAISE EXCEPTION 'Cliente com CPF % não encontrado', cpf_p;
 	END IF;
 
-	EXECUTE format('DROP USER IF EXISTS %I', regexp_replace(cpf_p, '[^0-9]', '', 'g'));
+	EXECUTE format('DROP USER IF EXISTS %I', regexp_replace(cpf_p, '\D', '', 'g'));
 END;
 $$ LANGUAGE plpgsql;
 
@@ -193,15 +192,6 @@ FROM
 	cliente
 WHERE
 	ativo = true;
-
--- exemplo de uso da função cadastrar_cliente
-SELECT
-	cadastrar_cliente (
-		'renan',
-		'123.456.789-01',
-		'renan@email.com',
-		'86999168877'
-	);
 
 -- View para listar cupons disponíveis por client
 DROP VIEW IF EXISTS cupons_disponiveis_por_cliente;
