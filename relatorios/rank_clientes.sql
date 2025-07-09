@@ -22,6 +22,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+REVOKE ALL ON FUNCTION rank_clientes() FROM public;
+GRANT EXECUTE ON FUNCTION rank_clientes() TO relatorios;
+
 -- Executa a função para obter o ranking de clientes
 
 SELECT * FROM rank_clientes();

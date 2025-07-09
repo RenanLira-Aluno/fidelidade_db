@@ -28,6 +28,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+REVOKE ALL ON FUNCTION cupons_em_vendas() FROM public;
+GRANT EXECUTE ON FUNCTION cupons_em_vendas() TO relatorios;
+
 SELECT
     *
 FROM

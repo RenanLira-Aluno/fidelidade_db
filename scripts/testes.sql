@@ -57,7 +57,6 @@ SELECT inserir('resgate_cupom', '987.654.321-00', '2');
 
 -- FUNCIONÁRIOS (essa tabela não tem função genérica, então será populada diretamente)
 
-INSERT INTO funcionario (login_pg, cargo)
-VALUES ('vendedor01', 'vendedor'),
-       ('gerente01', 'gerente'),
-       ('admin01', 'administrador');
+SELECT cadastrar_funcionario(login_p := 'vendedor01', cargo := 'vendedor');
+SELECT cadastrar_funcionario(login_p := 'gerente01', cargo := 'gerente');
+SELECT cadastrar_funcionario(login_p := 'admin01', cargo := 'administrador');

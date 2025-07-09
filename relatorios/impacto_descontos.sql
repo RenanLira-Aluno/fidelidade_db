@@ -34,6 +34,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+REVOKE ALL ON FUNCTION impacto_descontos() FROM public;
+GRANT EXECUTE ON FUNCTION impacto_descontos() TO relatorios;
+
+
 SELECT
     *
 FROM

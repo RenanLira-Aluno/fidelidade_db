@@ -1,5 +1,6 @@
 CREATE ROLE grupo_clientes;
 CREATE ROLE grupo_funcionarios;
+CREATE ROLE relatorios;
 
 
 CREATE OR REPLACE FUNCTION get_funcionario() RETURNS BOOLEAN AS $$
