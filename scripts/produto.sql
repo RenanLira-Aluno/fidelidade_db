@@ -91,7 +91,6 @@ DROP FUNCTION IF EXISTS remover_item_venda(INT);
 -- Função para cadastrar produto
 
 CREATE OR REPLACE FUNCTION cadastrar_produto(
-    id_produto_p INT,
     codigo_p VARCHAR,
     nome_p VARCHAR,
     descricao_p TEXT,

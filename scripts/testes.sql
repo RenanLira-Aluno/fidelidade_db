@@ -67,8 +67,8 @@ select * from item_venda
 select * from cupom
 select * from resgate_cupom
 select * from categoria_programa
-select * from produto
-select cadastrar_produto('CAMISA001','Camisa casual', 'Camisa casual',20.00,'Roupas', 50)
+select * from produto;
+select cadastrar_produto('CAMISA002','Camisa casual', 'Camisa casual',20.00,'Roupas', 50);
 select cadastrar_categoria_programa(7,'Radiante', 8000)
 select atualizar_categoria_programa(7, 'Radiante', 1000)
 select excluir_categoria_programa(7)

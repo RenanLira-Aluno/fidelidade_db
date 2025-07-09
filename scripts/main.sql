@@ -111,108 +111,7 @@ VALUES
 	(5, 'diamante', 2500),
 	(6, 'elite', 4000);
 
--- PRODUTOS
-INSERT INTO
-	produto (
-		id_produto,
-		codigo,
-		nome,
-		descricao,
-		preco,
-		categoria,
-		estoque
-	)
-VALUES
-	(
-		1,
-		'PRATO001',
-		'Feijoada Completa',
-		'Feijoada servida com arroz, couve, farofa e laranja.',
-		34.90,
-		'Prato Principal',
-		50
-	),
-	(
-		2,
-		'PRATO002',
-		'Lasanha à Bolonhesa',
-		'Lasanha com carne moída, molho de tomate e queijo gratinado.',
-		29.90,
-		'Prato Principal',
-		40
-	),
-	(
-		3,
-		'PRATO003',
-		'Salada Caesar',
-		'Alface americana, frango grelhado, croutons e molho Caesar.',
-		22.50,
-		'Entrada',
-		30
-	),
-	(
-		4,
-		'BEB001',
-		'Suco Natural de Laranja',
-		'Suco feito na hora com laranjas frescas.',
-		8.90,
-		'Bebida',
-		100
-	),
-	(
-		5,
-		'BEB002',
-		'Refrigerante Lata',
-		'Escolha entre Coca-Cola, Guaraná ou Fanta.',
-		6.00,
-		'Bebida',
-		200
-	),
-	(
-		6,
-		'SOB001',
-		'Pudim de Leite',
-		'Clássico pudim de leite condensado com calda de caramelo.',
-		9.50,
-		'Sobremesa',
-		25
-	),
-	(
-		7,
-		'SOB002',
-		'Brownie com Sorvete',
-		'Brownie de chocolate servido com bola de sorvete de creme.',
-		14.00,
-		'Sobremesa',
-		20
-	),
-	(
-		8,
-		'PRATO004',
-		'Frango Grelhado com Legumes',
-		'Peito de frango grelhado acompanhado de legumes salteados.',
-		27.00,
-		'Prato Principal',
-		35
-	),
-	(
-		9,
-		'ENT001',
-		'Cesta de Pães',
-		'Pães variados servidos com manteiga e geleia.',
-		12.00,
-		'Entrada',
-		15
-	),
-	(
-		10,
-		'BEB003',
-		'Cerveja Long Neck',
-		'Cerveja gelada disponível em várias marcas.',
-		9.90,
-		'Bebida',
-		60
-	);
+
 
 -- Função genérica de inserção
 CREATE
@@ -242,13 +141,12 @@ BEGIN
 
     ELSIF nome_tabela = 'produto' THEN
         PERFORM cadastrar_produto(
-            id_produto_p := valores[1]::INT,
-            codigo_p     := valores[2],
-            nome_p       := valores[3],
-            descricao_p  := valores[4],
-            preco_p      := valores[5]::DECIMAL,
-            categoria_p  := valores[6],
-            estoque_p    := valores[7]::INT
+            codigo_p     := valores[1],
+            nome_p       := valores[2],
+            descricao_p  := valores[3],
+            preco_p      := valores[4]::DECIMAL,
+            categoria_p  := valores[5],
+            estoque_p    := valores[6]::INT
         );
 
     ELSIF nome_tabela = 'cupom' THEN
